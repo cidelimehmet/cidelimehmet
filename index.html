@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Okuma Şampiyonu - V12</title>
+    <title>Okuma Şampiyonu - V15 (Akıllı Geçiş)</title>
     <style>
         :root {
             --primary: #FF9F1C;   
@@ -47,7 +47,7 @@
         h2 { color: var(--secondary); font-size: 1.5rem; margin-bottom: 15px; }
         p { color: #555; font-size: 1.1rem; }
 
-        /* FORM */
+        /* INPUT */
         input[type="text"] {
             font-size: 1.5rem; padding: 15px; border-radius: 15px;
             border: 3px solid var(--secondary); width: 80%; text-align: center;
@@ -79,7 +79,7 @@
             border-radius: 20px; 
             padding: 20px; margin: 20px 0; min-height: 180px; 
             display: flex; justify-content: center; align-items: center;
-            /* Transition kaldırdık, animasyonla yöneteceğiz */
+            transition: background-color 0.1s, border-color 0.1s, transform 0.1s; /* Yumuşak geçiş */
         }
         
         .word-text { 
@@ -88,32 +88,27 @@
             line-height: 1.1; letter-spacing: 1px;
         }
 
-        /* DÜZELTİLMİŞ FLAŞ ANİMASYONLARI (Otomatik Beyazlaşan) */
-        @keyframes animOk { 
-            0% { background-color: #dcedc8; border-color: #4CAF50; border-style: solid; transform: scale(1.02); } 
-            100% { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: scale(1); } 
-        }
-        @keyframes animErr { 
-            0% { background-color: #ffcdd2; border-color: #F44336; border-style: solid; transform: translateX(-5px); } 
-            25% { transform: translateX(5px); }
-            50% { transform: translateX(-5px); }
-            100% { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: translateX(0); } 
-        }
-
-        .flash-ok { animation: animOk 0.4s ease-out forwards; }
-        .flash-err { animation: animErr 0.4s ease-out forwards; }
+        /* KART DURUM SINIFLARI (CSS ile yönetiyoruz) */
+        .card-neutral { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: scale(1); }
+        .card-success { background-color: #dcedc8; border-color: #4CAF50; border-style: solid; transform: scale(1.03); }
+        .card-error   { background-color: #ffcdd2; border-color: #F44336; border-style: solid; transform: scale(0.97); }
 
         /* KONTROLLER */
         .controls { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        
         .btn-control {
-            width: 85px; height: 85px; border-radius: 50%; font-size: 2.2rem;
+            width: 90px; height: 90px; border-radius: 50%; font-size: 2.2rem;
             border: none; cursor: pointer; color: white; 
             display: flex; align-items: center; justify-content: center;
-            transition: 0.1s;
+            transition: opacity 0.2s;
+            touch-action: manipulation;
         }
+        
         .btn-yes { background: var(--success); box-shadow: 0 6px 0 #388E3C; }
         .btn-no { background: var(--error); box-shadow: 0 6px 0 #D32F2F; }
         .btn-control:active { transform: translateY(6px); box-shadow: none; }
+        
+        .controls.locked .btn-control { opacity: 0.5; pointer-events: none; }
 
         /* KARNE */
         .score-circle {
@@ -137,7 +132,6 @@
         .badge { padding: 3px 8px; border-radius: 10px; color: white; font-size: 0.8rem; }
 
         #confetti { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
-        
         .mode-desc { font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 10px; display: block; }
     </style>
 </head>
@@ -152,7 +146,7 @@
         <p>Okuma macerasına hazırsan ismini yaz:</p>
         <input type="text" id="studentName" placeholder="Adın nedir?" autocomplete="off">
         <br>
-        <button class="btn" onclick="app.goToGroups()">Maceraya Başla 🚀</button>
+        <button class="btn" onclick="window.app.goToGroups()">Maceraya Başla 🚀</button>
     </div>
 
     <div id="screen-groups" class="screen">
@@ -164,23 +158,23 @@
         <h2>En Son Hangi Harfi Öğrendin?</h2>
         <div id="letter-buttons" class="grid-buttons"></div>
         <br>
-        <button class="btn btn-secondary btn-small" style="margin-top:20px" onclick="ui.showScreen('screen-groups')">⬅ Geri Dön</button>
+        <button class="btn btn-secondary btn-small" style="margin-top:20px" onclick="window.ui.showScreen('screen-groups')">⬅ Geri Dön</button>
     </div>
 
     <div id="screen-settings" class="screen">
         <h2>⏱️ Süre Seç</h2>
         <div style="display:flex; justify-content:center; gap:10px; margin-bottom:25px;">
-            <button class="btn btn-small btn-time selected-time" onclick="app.setTime(1, this)">1 dk</button>
-            <button class="btn btn-small btn-time" onclick="app.setTime(2, this)">2 dk</button>
-            <button class="btn btn-small btn-time" onclick="app.setTime(3, this)">3 dk</button>
-            <button class="btn btn-small btn-time" onclick="app.setTime(5, this)">5 dk</button>
+            <button class="btn btn-small btn-time selected-time" onclick="window.app.setTime(1, this)">1 dk</button>
+            <button class="btn btn-small btn-time" onclick="window.app.setTime(2, this)">2 dk</button>
+            <button class="btn btn-small btn-time" onclick="window.app.setTime(3, this)">3 dk</button>
+            <button class="btn btn-small btn-time" onclick="window.app.setTime(5, this)">5 dk</button>
         </div>
 
         <h2>🎯 Mod Seç</h2>
-        <button class="btn" onclick="app.startGame('hece')">🧩 Hece Avcısı</button>
+        <button class="btn" onclick="window.app.startGame('hece')">🧩 Hece Avcısı</button>
         <span class="mode-desc">Kısa heceler ve kelimeler (2-3 harf)</span>
 
-        <button class="btn btn-secondary" onclick="app.startGame('kelime')">📚 Kelime Ustası</button>
+        <button class="btn btn-secondary" onclick="window.app.startGame('kelime')">📚 Kelime Ustası</button>
         <span class="mode-desc">Uzun ve zorlaşan kelimeler (En az 2 hece)</span>
     </div>
 
@@ -196,13 +190,13 @@
 
         <div id="level-info" style="font-size:0.9rem; color:#888; margin-bottom:10px;"></div>
 
-        <div class="word-card" id="word-card">
+        <div class="word-card card-neutral" id="word-card">
             <div class="word-text" id="current-word">...</div>
         </div>
 
-        <div class="controls">
-            <button class="btn-control btn-no" onmousedown="app.handleAnswer(false)" ontouchstart="app.handleAnswer(false)">✖</button>
-            <button class="btn-control btn-yes" onmousedown="app.handleAnswer(true)" ontouchstart="app.handleAnswer(true)">✔</button>
+        <div class="controls" id="game-controls">
+            <button class="btn-control btn-no" ontouchstart="window.app.handleInput(event, false)" onclick="window.app.handleInput(event, false)">✖</button>
+            <button class="btn-control btn-yes" ontouchstart="window.app.handleInput(event, true)" onclick="window.app.handleInput(event, true)">✔</button>
         </div>
     </div>
 
@@ -236,7 +230,7 @@
 </div>
 
 <script>
-const DB = {
+window.DB = {
     groups: [
         ['a','n','e','t','i','l'],
         ['o','k','u','r','ı','m'],
@@ -272,7 +266,7 @@ const DB = {
     ]
 };
 
-const state = {
+window.state = {
     name: '',
     allowedChars: [],
     queue: [],
@@ -283,14 +277,14 @@ const state = {
     duration: 1,
     timeLeft: 0,
     timerId: null,
-    lock: false
+    isLocked: false 
 };
 
-const ui = {
+window.ui = {
     screens: ['screen-login', 'screen-groups', 'screen-letters', 'screen-settings', 'screen-game', 'screen-report'],
     
     showScreen: (id) => {
-        ui.screens.forEach(s => document.getElementById(s).classList.remove('active'));
+        window.ui.screens.forEach(s => document.getElementById(s).classList.remove('active'));
         document.getElementById(id).classList.add('active');
     },
 
@@ -315,24 +309,27 @@ const ui = {
         document.getElementById('current-word').innerText = displayText;
     },
 
-    flashCard: (type) => {
+    // YENİ GÖRSEL DURUM YÖNETİMİ
+    setCardState: (state) => {
         const card = document.getElementById('word-card');
-        // Reset animation by removing class and forcing reflow
-        card.classList.remove('flash-ok', 'flash-err');
-        void card.offsetWidth; 
-        card.classList.add(type === 'ok' ? 'flash-ok' : 'flash-err');
+        // Tüm sınıfları temizle
+        card.classList.remove('card-neutral', 'card-success', 'card-error');
+        
+        if (state === 'ok') card.classList.add('card-success');
+        else if (state === 'err') card.classList.add('card-error');
+        else card.classList.add('card-neutral');
     },
 
     updateStats: () => {
-        document.getElementById('score-disp').innerText = state.correct;
-        const m = Math.floor(state.timeLeft / 60);
-        const s = state.timeLeft % 60;
+        document.getElementById('score-disp').innerText = window.state.correct;
+        const m = Math.floor(window.state.timeLeft / 60);
+        const s = window.state.timeLeft % 60;
         document.getElementById('timer-disp').innerText = `${m}:${s<10?'0'+s:s}`;
     },
     
     updateLevelInfo: (word) => {
         const div = document.getElementById('level-info');
-        if(state.mode === 'hece') {
+        if(window.state.mode === 'hece') {
             div.innerText = "Hece Avcısı (2-3 Harf)";
             div.style.color = "#888";
         } else {
@@ -343,36 +340,36 @@ const ui = {
     }
 };
 
-const app = {
+window.app = {
     goToGroups: () => {
         const name = document.getElementById('studentName').value.trim();
         if(!name) return alert("Lütfen ismini yaz!");
-        state.name = name;
+        window.state.name = name;
         
-        ui.createButtons('group-buttons', DB.groups.map((_, i) => `${i+1}. Grup`), (idx) => {
-            app.loadLetters(idx);
+        window.ui.createButtons('group-buttons', window.DB.groups.map((_, i) => `${i+1}. Grup`), (idx) => {
+            window.app.loadLetters(idx);
         }, false);
-        ui.showScreen('screen-groups');
+        window.ui.showScreen('screen-groups');
     },
 
     loadLetters: (groupIdx) => {
-        const group = DB.groups[groupIdx];
-        ui.createButtons('letter-buttons', group.map(c => c.toUpperCase('tr-TR')), (charIdx) => {
-            app.prepareGame(groupIdx, charIdx);
+        const group = window.DB.groups[groupIdx];
+        window.ui.createButtons('letter-buttons', group.map(c => c.toUpperCase('tr-TR')), (charIdx) => {
+            window.app.prepareGame(groupIdx, charIdx);
         }, true);
-        ui.showScreen('screen-letters');
+        window.ui.showScreen('screen-letters');
     },
 
     prepareGame: (gIdx, cIdx) => {
         let chars = [];
-        for(let i=0; i<gIdx; i++) chars = chars.concat(DB.groups[i]);
-        for(let i=0; i<=cIdx; i++) chars.push(DB.groups[gIdx][i]);
-        state.allowedChars = chars;
-        ui.showScreen('screen-settings');
+        for(let i=0; i<gIdx; i++) chars = chars.concat(window.DB.groups[i]);
+        for(let i=0; i<=cIdx; i++) chars.push(window.DB.groups[gIdx][i]);
+        window.state.allowedChars = chars;
+        window.ui.showScreen('screen-settings');
     },
 
     setTime: (min, btn) => {
-        state.duration = min;
+        window.state.duration = min;
         document.querySelectorAll('.btn-time').forEach(b => b.classList.remove('selected-time'));
         btn.classList.add('selected-time');
     },
@@ -383,102 +380,123 @@ const app = {
     },
 
     startGame: (mode) => {
-        state.mode = mode;
-        let pool = DB.words.filter(word => {
-            return word.split('').every(c => state.allowedChars.includes(c));
+        window.state.mode = mode;
+        let pool = window.DB.words.filter(word => {
+            return word.split('').every(c => window.state.allowedChars.includes(c));
         });
 
         if (mode === 'hece') {
             pool = pool.filter(w => w.length >= 2 && w.length <= 3);
             pool.sort(() => 0.5 - Math.random());
         } else {
-            pool = pool.filter(w => app.countVowels(w) >= 2);
+            pool = pool.filter(w => window.app.countVowels(w) >= 2);
             pool.sort(() => 0.5 - Math.random());
             pool.sort((a,b) => a.length - b.length);
         }
 
         if(pool.length === 0) return alert("Bu harflerle uygun kelime bulunamadı.");
 
-        state.queue = pool;
-        state.history = [];
-        state.correct = 0;
-        state.errors = 0;
-        state.timeLeft = state.duration * 60;
+        window.state.queue = pool;
+        window.state.history = [];
+        window.state.correct = 0;
+        window.state.errors = 0;
+        window.state.timeLeft = window.state.duration * 60;
+        window.state.isLocked = false;
         
-        ui.showScreen('screen-game');
-        app.nextWord();
-        app.startTimer();
+        document.getElementById('game-controls').classList.remove('locked');
+        window.ui.setCardState('neutral');
+        
+        window.ui.showScreen('screen-game');
+        window.app.nextWord();
+        window.app.startTimer();
     },
 
     startTimer: () => {
-        if(state.timerId) clearInterval(state.timerId);
-        ui.updateStats();
-        state.timerId = setInterval(() => {
-            state.timeLeft--;
-            ui.updateStats();
-            if(state.timeLeft <= 0) app.finishGame(true);
+        if(window.state.timerId) clearInterval(window.state.timerId);
+        window.ui.updateStats();
+        window.state.timerId = setInterval(() => {
+            window.state.timeLeft--;
+            window.ui.updateStats();
+            if(window.state.timeLeft <= 0) window.app.finishGame(true);
         }, 1000);
     },
 
     nextWord: () => {
-        if(state.queue.length === 0) return app.finishGame(false);
-        const w = state.queue[0];
-        ui.updateCard(w);
-        ui.updateLevelInfo(w);
+        if(window.state.queue.length === 0) return window.app.finishGame(false);
+        const w = window.state.queue[0];
+        window.ui.updateCard(w);
+        window.ui.updateLevelInfo(w);
     },
 
-    handleAnswer: (isCorrect) => {
-        if(state.lock) return;
-        state.lock = true;
-        setTimeout(() => state.lock = false, 50); 
+    handleInput: (e, isCorrect) => {
+        if(e) e.preventDefault();
+        if(window.state.isLocked) return;
 
-        const currentWord = state.queue[0];
-        state.history.push({ word: currentWord, correct: isCorrect });
+        // 1. KİLİTLE & GÖRSEL TEPKİ (300ms)
+        window.state.isLocked = true;
+        document.getElementById('game-controls').classList.add('locked');
+        
+        // Kartın rengini o anki kelime için değiştir
+        window.ui.setCardState(isCorrect ? 'ok' : 'err');
+
+        // Puanı Arka Planda İşle
+        window.app.processScore(isCorrect);
+        window.ui.updateStats();
+
+        // 2. BEKLE VE YENİ KELİMEYE GEÇ
+        setTimeout(() => {
+            window.ui.setCardState('neutral'); // Kartı beyaza döndür
+            window.app.nextWord(); // Yeni kelimeyi yükle
+            
+            // Kilidi aç
+            window.state.isLocked = false;
+            document.getElementById('game-controls').classList.remove('locked');
+        }, 300); // 0.3 Saniye Bekleme
+    },
+
+    processScore: (isCorrect) => {
+        const currentWord = window.state.queue[0];
+        window.state.history.push({ word: currentWord, correct: isCorrect });
 
         if (isCorrect) {
-            state.correct++;
-            state.queue.shift();
-            ui.flashCard('ok');
+            window.state.correct++;
+            window.state.queue.shift();
         } else {
-            state.errors++;
-            const w = state.queue.shift();
-            if(state.mode === 'kelime') {
-                const insertIdx = Math.min(state.queue.length, 3);
-                state.queue.splice(insertIdx, 0, w);
+            window.state.errors++;
+            const w = window.state.queue.shift();
+            if(window.state.mode === 'kelime') {
+                const insertIdx = Math.min(window.state.queue.length, 3);
+                window.state.queue.splice(insertIdx, 0, w);
             } else {
-                state.queue.push(w);
+                window.state.queue.push(w);
             }
-            ui.flashCard('err');
         }
-
-        ui.updateStats();
-        app.nextWord();
     },
 
     finishGame: (timeUp) => {
-        clearInterval(state.timerId);
-        ui.showScreen('screen-report');
-        if(!timeUp) app.fireConfetti();
+        clearInterval(window.state.timerId);
+        window.ui.showScreen('screen-report');
+        if(!timeUp) window.app.fireConfetti();
 
-        const total = state.correct + state.errors;
-        const score = total === 0 ? 0 : Math.round((state.correct / total) * 100);
+        const total = window.state.correct + window.state.errors;
+        const score = total === 0 ? 0 : Math.round((window.state.correct / total) * 100);
 
-        document.getElementById('rep-name').innerText = state.name;
+        document.getElementById('rep-name').innerText = window.state.name;
         document.getElementById('final-score').innerText = score;
-        document.getElementById('rep-correct').innerText = state.correct;
-        document.getElementById('rep-errors').innerText = state.errors;
-        document.getElementById('rep-time').innerText = state.duration;
+        document.getElementById('rep-correct').innerText = window.state.correct;
+        document.getElementById('rep-errors').innerText = window.state.errors;
+        document.getElementById('rep-time').innerText = window.state.duration;
 
         const circle = document.querySelector('.score-circle');
         circle.style.background = score >= 85 ? "#4CAF50" : (score >= 60 ? "#FF9F1C" : "#FF5252");
         circle.style.boxShadow = `0 0 0 5px ${circle.style.background}`;
 
-        app.generateAnalysis();
-        app.renderHistory();
+        window.app.generateAnalysis();
+        window.app.renderHistory();
     },
 
     generateAnalysis: () => {
-        const wrongs = state.history.filter(h => !h.correct);
+        const wrongs = window.state.history.filter(h => !h.correct);
         const card = document.getElementById('ai-analysis');
         const text = document.getElementById('analysis-text');
 
@@ -506,7 +524,7 @@ const app = {
     renderHistory: () => {
         const list = document.getElementById('history-list');
         list.innerHTML = '';
-        [...state.history].reverse().forEach(h => {
+        [...window.state.history].reverse().forEach(h => {
             const div = document.createElement('div');
             div.className = 'history-item';
             div.innerHTML = `
