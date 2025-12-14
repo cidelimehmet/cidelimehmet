@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Okuma Şampiyonu - V12</title>
+    <style>
+        :root {
+            --primary: #FF9F1C;   
+            --secondary: #2EC4B6; 
+            --bg: #CBF3F0;        
+            --card-bg: #FFFFFF;
+            --text: #2B2D42;
+            --success: #4CAF50;   
+            --error: #FF5252;     
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Verdana', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .container {
+            width: 100%; max-width: 600px; padding: 20px; text-align: center;
+            position: relative; z-index: 10;
+        }
+
+        /* EKRANLAR */
+        .screen {
+            display: none; background: var(--card-bg); padding: 30px;
+            border-radius: 25px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            animation: fadeIn 0.4s ease-out;
+        }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TİPOGRAFİ */
+        h1 { color: var(--text); font-size: 2rem; margin-bottom: 20px; }
+        h2 { color: var(--secondary); font-size: 1.5rem; margin-bottom: 15px; }
+        p { color: #555; font-size: 1.1rem; }
+
+        /* FORM */
+        input[type="text"] {
+            font-size: 1.5rem; padding: 15px; border-radius: 15px;
+            border: 3px solid var(--secondary); width: 80%; text-align: center;
+            margin-bottom: 20px; outline: none; color: var(--text);
+        }
+
+        /* BUTONLAR */
+        .btn {
+            background-color: var(--primary); color: white; border: none;
+            padding: 15px 30px; font-size: 1.2rem; border-radius: 50px;
+            cursor: pointer; transition: transform 0.1s;
+            margin: 8px; font-weight: bold; width: 100%; max-width: 300px;
+            box-shadow: 0 4px 0 #e67e22; 
+        }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        .btn-secondary { background-color: var(--secondary); box-shadow: 0 4px 0 #25a094; }
+        .btn-small { width: auto; padding: 10px 20px; font-size: 1rem; }
+        
+        .grid-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+        .btn-time { background-color: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; }
+        .selected-time { background-color: #e91e63; box-shadow: 0 4px 0 #c2185b; transform: scale(1.05); }
+
+        /* OYUN KARTI */
+        .word-card {
+            background: #fff; 
+            border: 5px dashed var(--secondary);
+            border-radius: 20px; 
+            padding: 20px; margin: 20px 0; min-height: 180px; 
+            display: flex; justify-content: center; align-items: center;
+            /* Transition kaldırdık, animasyonla yöneteceğiz */
+        }
+        
+        .word-text { 
+            font-size: 4.5rem; font-weight: bold; color: var(--text); 
+            font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
+            line-height: 1.1; letter-spacing: 1px;
+        }
+
+        /* DÜZELTİLMİŞ FLAŞ ANİMASYONLARI (Otomatik Beyazlaşan) */
+        @keyframes animOk { 
+            0% { background-color: #dcedc8; border-color: #4CAF50; border-style: solid; transform: scale(1.02); } 
+            100% { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: scale(1); } 
+        }
+        @keyframes animErr { 
+            0% { background-color: #ffcdd2; border-color: #F44336; border-style: solid; transform: translateX(-5px); } 
+            25% { transform: translateX(5px); }
+            50% { transform: translateX(-5px); }
+            100% { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: translateX(0); } 
+        }
+
+        .flash-ok { animation: animOk 0.4s ease-out forwards; }
+        .flash-err { animation: animErr 0.4s ease-out forwards; }
+
+        /* KONTROLLER */
+        .controls { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        .btn-control {
+            width: 85px; height: 85px; border-radius: 50%; font-size: 2.2rem;
+            border: none; cursor: pointer; color: white; 
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.1s;
+        }
+        .btn-yes { background: var(--success); box-shadow: 0 6px 0 #388E3C; }
+        .btn-no { background: var(--error); box-shadow: 0 6px 0 #D32F2F; }
+        .btn-control:active { transform: translateY(6px); box-shadow: none; }
+
+        /* KARNE */
+        .score-circle {
+            width: 140px; height: 140px; background: var(--primary); color: white;
+            border-radius: 50%; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; margin: 0 auto 20px auto;
+            border: 6px solid #fff; box-shadow: 0 0 0 5px var(--primary);
+        }
+        .score-val { font-size: 3.5rem; font-weight: bold; }
+        
+        .analysis-box { 
+            background: #fff9c4; border-left: 6px solid #fbc02d; 
+            padding: 15px; text-align: left; border-radius: 10px; margin: 20px 0;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        details { background: #f1f8e9; border-radius: 15px; padding: 10px; margin-top: 15px; border: 1px solid #c5e1a5; }
+        summary { font-weight: bold; cursor: pointer; outline: none; list-style: none; color: #33691e; }
+        .history-list { max-height: 200px; overflow-y: auto; margin-top: 10px; text-align: left; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #dcedc8; }
+        .badge { padding: 3px 8px; border-radius: 10px; color: white; font-size: 0.8rem; }
+
+        #confetti { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
+        
+        .mode-desc { font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="container">
+    
+    <div id="screen-login" class="screen active">
+        <h1>👋 Merhaba!</h1>
+        <p>Okuma macerasına hazırsan ismini yaz:</p>
+        <input type="text" id="studentName" placeholder="Adın nedir?" autocomplete="off">
+        <br>
+        <button class="btn" onclick="app.goToGroups()">Maceraya Başla 🚀</button>
+    </div>
+
+    <div id="screen-groups" class="screen">
+        <h2>Hangi Gruptasın?</h2>
+        <div id="group-buttons" class="grid-buttons"></div>
+    </div>
+
+    <div id="screen-letters" class="screen">
+        <h2>En Son Hangi Harfi Öğrendin?</h2>
+        <div id="letter-buttons" class="grid-buttons"></div>
+        <br>
+        <button class="btn btn-secondary btn-small" style="margin-top:20px" onclick="ui.showScreen('screen-groups')">⬅ Geri Dön</button>
+    </div>
+
+    <div id="screen-settings" class="screen">
+        <h2>⏱️ Süre Seç</h2>
+        <div style="display:flex; justify-content:center; gap:10px; margin-bottom:25px;">
+            <button class="btn btn-small btn-time selected-time" onclick="app.setTime(1, this)">1 dk</button>
+            <button class="btn btn-small btn-time" onclick="app.setTime(2, this)">2 dk</button>
+            <button class="btn btn-small btn-time" onclick="app.setTime(3, this)">3 dk</button>
+            <button class="btn btn-small btn-time" onclick="app.setTime(5, this)">5 dk</button>
+        </div>
+
+        <h2>🎯 Mod Seç</h2>
+        <button class="btn" onclick="app.startGame('hece')">🧩 Hece Avcısı</button>
+        <span class="mode-desc">Kısa heceler ve kelimeler (2-3 harf)</span>
+
+        <button class="btn btn-secondary" onclick="app.startGame('kelime')">📚 Kelime Ustası</button>
+        <span class="mode-desc">Uzun ve zorlaşan kelimeler (En az 2 hece)</span>
+    </div>
+
+    <div id="screen-game" class="screen">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="level-badge" style="background:#FF5252; padding:8px 15px; border-radius:20px; color:white; font-weight:bold;">
+                ⏳ <span id="timer-disp">00:00</span>
+            </div>
+            <div class="level-badge" style="background:#4CAF50; padding:8px 15px; border-radius:20px; color:white; font-weight:bold;">
+                ⭐ <span id="score-disp">0</span>
+            </div>
+        </div>
+
+        <div id="level-info" style="font-size:0.9rem; color:#888; margin-bottom:10px;"></div>
+
+        <div class="word-card" id="word-card">
+            <div class="word-text" id="current-word">...</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-control btn-no" onmousedown="app.handleAnswer(false)" ontouchstart="app.handleAnswer(false)">✖</button>
+            <button class="btn-control btn-yes" onmousedown="app.handleAnswer(true)" ontouchstart="app.handleAnswer(true)">✔</button>
+        </div>
+    </div>
+
+    <div id="screen-report" class="screen report-card" style="border: 5px solid gold;">
+        <h1>🏆 TEBRİKLER!</h1>
+        <h2 id="rep-name"></h2>
+
+        <div class="score-circle">
+            <span class="score-val" id="final-score">0</span>
+            <span style="font-size:0.8rem">PUAN</span>
+        </div>
+
+        <div id="ai-analysis" class="analysis-box" style="display:none">
+            <strong>💡 Öğretmen Notu:</strong>
+            <div id="analysis-text">...</div>
+        </div>
+
+        <div style="display:flex; justify-content:space-around; background:#f0f0f0; padding:10px; border-radius:15px; margin: 15px 0;">
+            <div>✅ <span id="rep-correct">0</span></div>
+            <div>❌ <span id="rep-errors">0</span></div>
+            <div>⏱️ <span id="rep-time">0</span>dk</div>
+        </div>
+
+        <details>
+            <summary>📋 Kelime Geçmişi ▼</summary>
+            <div class="history-list" id="history-list"></div>
+        </details>
+
+        <button class="btn" style="margin-top:20px;" onclick="location.reload()">Tekrar Oyna 🔄</button>
+    </div>
+</div>
+
+<script>
+const DB = {
+    groups: [
+        ['a','n','e','t','i','l'],
+        ['o','k','u','r','ı','m'],
+        ['ü','s','ö','y','d','z'],
+        ['ç','b','g','c','ş'],
+        ['p','h','v','ğ','f','j']
+    ],
+    words: [
+        "al","el","il","at","et","it","an","en","in","la","le","li","ta","te","ti","na","ne","ni",
+        "ala","ela","lale","talat","nalan","tane","nane","anne","nine","alet","atlet","aile","elli","nil","tel","ten","tat",
+        "ata","ana","ali","nile","elle","telle","tini","nini","ok","ol","on","ot","ak","ek","uk","un","ur","ut","ır","ıl","ım",
+        "om","kom","kot","kor","kol","kel","kul","kur","kar","kır","kıl","kin","kim","kir","kum","mor","mum","muz","tur","ton","tok",
+        "kok","kek","kilo","kale","kutu","koro","kura","kare","elek","etek","ekol","okul","oluk","olur","onur","oyun","koyun","koyu",
+        "uyu","iyi","yaya","kıyı","ayı","dayı","sayı","sarı","soru","koku","rakam","kuran","kemer","kilit","tarak","martı","mantı",
+        "orman","limon","armut","lokum","süt","tül","tür","kül","küs","süs","söz","göz","yaz","kaz","tuz","buz","muz","kız","diz","diş",
+        "kuş","kış","taş","yaş","baş","sel","sal","sol","son","sen","siz","sis","soy","say","ser","sır","dil","dal","dül","döl",
+        "diz","düz","dün","dut","dam","dem","yol","yel","yıl","yay","tay","toy","yüz","yün","yaz","yer","yar","zil","zar","zor","zam",
+        "saz","söz","öz","üz","iz","as","es","ıs","is","us","üs","os","ös","ay","oy","uy","üy","ey","ad","od","öd","ud","üd","id",
+        "az","ez","ız","iz","dayı","kedi","yedi","sayı","yazı","kuyu","tüyü","sürü","sözü","gözü","özü","üzüm","müze","maç","saç",
+        "taç","kaç","koç","suç","piç","iç","aç","üç","uç","çam","çan","çal","çil","çim","çok","çöl","bağ","dağ","yağ","çağ","çay",
+        "bal","bel","bil","bul","böl","bol","ben","bin","biz","boz","cam","cem","cım","cız","cep","cop","sac","hac","gen","gel","git",
+        "gir","gör","gül","göl","gün","şal","şer","şiş","şen","şok","şut","beş","kaş","kuş","kış","diş","fiş","boş","loş","hoş","coş",
+        "baba","dede","soba","masa","kasa","kısa","boru","koru","dolu","sulu","kuru","kuzu","tazı","gezi","gazi","balon","börek",
+        "çörek","tabak","ceket","sepet","simit","kilit","ceviz","havuç","karpuz","kavun","kabak","çilek","bebek","güneş","banyo",
+        "dosya","kolye","bilye","ayna","bina","elma","kiraz","incir","dolap","sehpa","perde","halı","biber","badem","bayrak","vatan",
+        "millet","pil","pul","pis","pas","pus","pes","pof","raf","saf","şef","tef","kef","küf","laf","fal","fil","fön","fok","hap",
+        "hip","hak","hal","hat","hız","his","huş","hür","van","var","vay","lav","av","ev","iv","ov","öv","jip","puf","tur","kur",
+        "nur","sur","dur","vur","kitap","defter","silgi","çanta","radyo","televizyon","bilgisayar","helikopter","kamyon","otobüs",
+        "traktör","bisiklet","sandalye","pencere","patates","domates","salatalık","patlıcan","ıspanak","pırasa","fasulye","mercimek",
+        "makarna","yumurta","türkiye","atatürk","cumhuriyet","öğretmen","öğrenci","papatya","karanfil","menekşe","sümbül","orkide",
+        "nilüfer","kaktüs","sardunya","begonya","yasemin","penguen","zürafa","kanguru","timsah","aslan","kaplan","panter","leopar",
+        "çita","sırtlan","portakal","mandalina","greyfurt"
+    ]
+};
+
+const state = {
+    name: '',
+    allowedChars: [],
+    queue: [],
+    history: [],
+    correct: 0,
+    errors: 0,
+    mode: '',
+    duration: 1,
+    timeLeft: 0,
+    timerId: null,
+    lock: false
+};
+
+const ui = {
+    screens: ['screen-login', 'screen-groups', 'screen-letters', 'screen-settings', 'screen-game', 'screen-report'],
+    
+    showScreen: (id) => {
+        ui.screens.forEach(s => document.getElementById(s).classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    },
+
+    createButtons: (containerId, items, onClick, primary = true) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        items.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.className = primary ? 'btn btn-small' : 'btn btn-secondary btn-small';
+            btn.innerText = item;
+            btn.onclick = () => onClick(index);
+            btn.style.width = "auto";
+            btn.style.minWidth = "60px";
+            container.appendChild(btn);
+        });
+    },
+
+    updateCard: (text) => {
+        const displayText = (Math.random() < 0.3) 
+            ? text.charAt(0).toLocaleUpperCase('tr-TR') + text.slice(1)
+            : text;
+        document.getElementById('current-word').innerText = displayText;
+    },
+
+    flashCard: (type) => {
+        const card = document.getElementById('word-card');
+        // Reset animation by removing class and forcing reflow
+        card.classList.remove('flash-ok', 'flash-err');
+        void card.offsetWidth; 
+        card.classList.add(type === 'ok' ? 'flash-ok' : 'flash-err');
+    },
+
+    updateStats: () => {
+        document.getElementById('score-disp').innerText = state.correct;
+        const m = Math.floor(state.timeLeft / 60);
+        const s = state.timeLeft % 60;
+        document.getElementById('timer-disp').innerText = `${m}:${s<10?'0'+s:s}`;
+    },
+    
+    updateLevelInfo: (word) => {
+        const div = document.getElementById('level-info');
+        if(state.mode === 'hece') {
+            div.innerText = "Hece Avcısı (2-3 Harf)";
+            div.style.color = "#888";
+        } else {
+            if(word.length <= 4) { div.innerText = "Seviye: 🟢 Kolay"; }
+            else if(word.length <= 6) { div.innerText = "Seviye: 🟡 Orta"; }
+            else { div.innerText = "Seviye: 🔴 İleri"; }
+        }
+    }
+};
+
+const app = {
+    goToGroups: () => {
+        const name = document.getElementById('studentName').value.trim();
+        if(!name) return alert("Lütfen ismini yaz!");
+        state.name = name;
+        
+        ui.createButtons('group-buttons', DB.groups.map((_, i) => `${i+1}. Grup`), (idx) => {
+            app.loadLetters(idx);
+        }, false);
+        ui.showScreen('screen-groups');
+    },
+
+    loadLetters: (groupIdx) => {
+        const group = DB.groups[groupIdx];
+        ui.createButtons('letter-buttons', group.map(c => c.toUpperCase('tr-TR')), (charIdx) => {
+            app.prepareGame(groupIdx, charIdx);
+        }, true);
+        ui.showScreen('screen-letters');
+    },
+
+    prepareGame: (gIdx, cIdx) => {
+        let chars = [];
+        for(let i=0; i<gIdx; i++) chars = chars.concat(DB.groups[i]);
+        for(let i=0; i<=cIdx; i++) chars.push(DB.groups[gIdx][i]);
+        state.allowedChars = chars;
+        ui.showScreen('screen-settings');
+    },
+
+    setTime: (min, btn) => {
+        state.duration = min;
+        document.querySelectorAll('.btn-time').forEach(b => b.classList.remove('selected-time'));
+        btn.classList.add('selected-time');
+    },
+
+    countVowels: (word) => {
+        const vowels = ['a','e','ı','i','o','ö','u','ü'];
+        return word.split('').filter(c => vowels.includes(c)).length;
+    },
+
+    startGame: (mode) => {
+        state.mode = mode;
+        let pool = DB.words.filter(word => {
+            return word.split('').every(c => state.allowedChars.includes(c));
+        });
+
+        if (mode === 'hece') {
+            pool = pool.filter(w => w.length >= 2 && w.length <= 3);
+            pool.sort(() => 0.5 - Math.random());
+        } else {
+            pool = pool.filter(w => app.countVowels(w) >= 2);
+            pool.sort(() => 0.5 - Math.random());
+            pool.sort((a,b) => a.length - b.length);
+        }
+
+        if(pool.length === 0) return alert("Bu harflerle uygun kelime bulunamadı.");
+
+        state.queue = pool;
+        state.history = [];
+        state.correct = 0;
+        state.errors = 0;
+        state.timeLeft = state.duration * 60;
+        
+        ui.showScreen('screen-game');
+        app.nextWord();
+        app.startTimer();
+    },
+
+    startTimer: () => {
+        if(state.timerId) clearInterval(state.timerId);
+        ui.updateStats();
+        state.timerId = setInterval(() => {
+            state.timeLeft--;
+            ui.updateStats();
+            if(state.timeLeft <= 0) app.finishGame(true);
+        }, 1000);
+    },
+
+    nextWord: () => {
+        if(state.queue.length === 0) return app.finishGame(false);
+        const w = state.queue[0];
+        ui.updateCard(w);
+        ui.updateLevelInfo(w);
+    },
+
+    handleAnswer: (isCorrect) => {
+        if(state.lock) return;
+        state.lock = true;
+        setTimeout(() => state.lock = false, 50); 
+
+        const currentWord = state.queue[0];
+        state.history.push({ word: currentWord, correct: isCorrect });
+
+        if (isCorrect) {
+            state.correct++;
+            state.queue.shift();
+            ui.flashCard('ok');
+        } else {
+            state.errors++;
+            const w = state.queue.shift();
+            if(state.mode === 'kelime') {
+                const insertIdx = Math.min(state.queue.length, 3);
+                state.queue.splice(insertIdx, 0, w);
+            } else {
+                state.queue.push(w);
+            }
+            ui.flashCard('err');
+        }
+
+        ui.updateStats();
+        app.nextWord();
+    },
+
+    finishGame: (timeUp) => {
+        clearInterval(state.timerId);
+        ui.showScreen('screen-report');
+        if(!timeUp) app.fireConfetti();
+
+        const total = state.correct + state.errors;
+        const score = total === 0 ? 0 : Math.round((state.correct / total) * 100);
+
+        document.getElementById('rep-name').innerText = state.name;
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('rep-correct').innerText = state.correct;
+        document.getElementById('rep-errors').innerText = state.errors;
+        document.getElementById('rep-time').innerText = state.duration;
+
+        const circle = document.querySelector('.score-circle');
+        circle.style.background = score >= 85 ? "#4CAF50" : (score >= 60 ? "#FF9F1C" : "#FF5252");
+        circle.style.boxShadow = `0 0 0 5px ${circle.style.background}`;
+
+        app.generateAnalysis();
+        app.renderHistory();
+    },
+
+    generateAnalysis: () => {
+        const wrongs = state.history.filter(h => !h.correct);
+        const card = document.getElementById('ai-analysis');
+        const text = document.getElementById('analysis-text');
+
+        if(wrongs.length === 0) {
+            card.style.display = 'block';
+            card.style.background = '#e8f5e9'; card.style.borderLeftColor = '#4CAF50';
+            text.innerText = "Harika! Hiç hata yapmadın. Okuma şampiyonusun!";
+            return;
+        }
+
+        let counts = {};
+        wrongs.forEach(item => {
+            item.word.split('').forEach(char => {
+                counts[char] = (counts[char] || 0) + 1;
+            });
+        });
+
+        let maxChar = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
+        card.style.display = 'block';
+        card.style.background = '#fff9c4'; card.style.borderLeftColor = '#FFC107';
+        text.innerHTML = `İçinde <strong>'${maxChar.toUpperCase('tr-TR')}'</strong> harfi geçen kelimelerde zorlanıyorsun. Biraz daha dikkat!`;
+    },
+
+    renderHistory: () => {
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        [...state.history].reverse().forEach(h => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <span style="font-size:1.1rem; font-weight:bold; color:#555">${h.word}</span>
+                <span class="badge" style="background:${h.correct?'#4CAF50':'#FF5252'}">
+                    ${h.correct?'DOĞRU':'YANLIŞ'}
+                </span>
+            `;
+            list.appendChild(div);
+        });
+    },
+
+    fireConfetti: () => {
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let pieces = [];
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#FFEB3B', '#FFC107', '#FF9800'];
+
+        for(let i=0; i<150; i++) {
+            pieces.push({
+                x: Math.random() * canvas.width, y: -10,
+                w: Math.random() * 10 + 5, h: Math.random() * 10 + 5,
+                c: colors[Math.floor(Math.random() * colors.length)],
+                v: Math.random() * 4 + 2, r: Math.random() * 360
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+            pieces.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x+p.w/2, p.y+p.h/2);
+                ctx.rotate(p.r * Math.PI / 180);
+                ctx.fillStyle = p.c;
+                ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+                ctx.restore();
+                p.y += p.v; p.r += 2;
+                if(p.y < canvas.height) active = true;
+            });
+            if(active) requestAnimationFrame(draw);
+        }
+        draw();
+    }
+};
+</script>
+</body>
+</html>
