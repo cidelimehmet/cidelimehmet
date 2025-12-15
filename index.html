@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Okuma Şampiyonu - V15 (Akıllı Geçiş)</title>
+    <title>Okuma Şampiyonu - Güvenli V15.1</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --primary: #FF9F1C;   
@@ -18,7 +23,8 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Verdana', 'Segoe UI', sans-serif;
+            /* 2. FONT AYARI: Tüm uygulama artık bu sevimli fontu kullanacak */
+            font-family: 'Comic Neue', 'Comic Sans MS', sans-serif;
             background-color: var(--bg);
             margin: 0; padding: 0;
             display: flex; justify-content: center; align-items: center;
@@ -43,21 +49,23 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* TİPOGRAFİ */
-        h1 { color: var(--text); font-size: 2rem; margin-bottom: 20px; }
-        h2 { color: var(--secondary); font-size: 1.5rem; margin-bottom: 15px; }
-        p { color: #555; font-size: 1.1rem; }
+        h1 { color: var(--text); font-size: 2.2rem; margin-bottom: 20px; font-weight: 700; }
+        h2 { color: var(--secondary); font-size: 1.6rem; margin-bottom: 15px; font-weight: 700; }
+        p { color: #555; font-size: 1.2rem; }
 
         /* INPUT */
         input[type="text"] {
+            font-family: 'Comic Neue', sans-serif; /* Input içi fontu */
             font-size: 1.5rem; padding: 15px; border-radius: 15px;
             border: 3px solid var(--secondary); width: 80%; text-align: center;
-            margin-bottom: 20px; outline: none; color: var(--text);
+            margin-bottom: 20px; outline: none; color: var(--text); font-weight: bold;
         }
 
         /* BUTONLAR */
         .btn {
+            font-family: 'Comic Neue', sans-serif;
             background-color: var(--primary); color: white; border: none;
-            padding: 15px 30px; font-size: 1.2rem; border-radius: 50px;
+            padding: 15px 30px; font-size: 1.3rem; border-radius: 50px;
             cursor: pointer; transition: transform 0.1s;
             margin: 8px; font-weight: bold; width: 100%; max-width: 300px;
             box-shadow: 0 4px 0 #e67e22; 
@@ -65,7 +73,7 @@
         .btn:active { transform: translateY(4px); box-shadow: none; }
         
         .btn-secondary { background-color: var(--secondary); box-shadow: 0 4px 0 #25a094; }
-        .btn-small { width: auto; padding: 10px 20px; font-size: 1rem; }
+        .btn-small { width: auto; padding: 10px 20px; font-size: 1.1rem; }
         
         .grid-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 
@@ -79,16 +87,17 @@
             border-radius: 20px; 
             padding: 20px; margin: 20px 0; min-height: 180px; 
             display: flex; justify-content: center; align-items: center;
-            transition: background-color 0.1s, border-color 0.1s, transform 0.1s; /* Yumuşak geçiş */
+            transition: background-color 0.1s, border-color 0.1s, transform 0.1s;
         }
         
         .word-text { 
-            font-size: 4.5rem; font-weight: bold; color: var(--text); 
-            font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
+            font-size: 5rem; /* Font değiştiği için biraz büyüttüm */
+            font-weight: 700; 
+            color: var(--text); 
             line-height: 1.1; letter-spacing: 1px;
         }
 
-        /* KART DURUM SINIFLARI (CSS ile yönetiyoruz) */
+        /* KART DURUM SINIFLARI */
         .card-neutral { background-color: #fff; border-color: var(--secondary); border-style: dashed; transform: scale(1); }
         .card-success { background-color: #dcedc8; border-color: #4CAF50; border-style: solid; transform: scale(1.03); }
         .card-error   { background-color: #ffcdd2; border-color: #F44336; border-style: solid; transform: scale(0.97); }
@@ -122,7 +131,6 @@
         .analysis-box { 
             background: #fff9c4; border-left: 6px solid #fbc02d; 
             padding: 15px; text-align: left; border-radius: 10px; margin: 20px 0;
-            font-family: 'Verdana', sans-serif;
         }
 
         details { background: #f1f8e9; border-radius: 15px; padding: 10px; margin-top: 15px; border: 1px solid #c5e1a5; }
@@ -132,7 +140,7 @@
         .badge { padding: 3px 8px; border-radius: 10px; color: white; font-size: 0.8rem; }
 
         #confetti { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
-        .mode-desc { font-size: 0.85rem; color: #666; margin-top: -5px; margin-bottom: 10px; display: block; }
+        .mode-desc { font-size: 0.9rem; color: #666; margin-top: -5px; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
@@ -239,32 +247,101 @@ window.DB = {
         ['p','h','v','ğ','f','j']
     ],
     words: [
-        "al","el","il","at","et","it","an","en","in","la","le","li","ta","te","ti","na","ne","ni",
-        "ala","ela","lale","talat","nalan","tane","nane","anne","nine","alet","atlet","aile","elli","nil","tel","ten","tat",
-        "ata","ana","ali","nile","elle","telle","tini","nini","ok","ol","on","ot","ak","ek","uk","un","ur","ut","ır","ıl","ım",
-        "om","kom","kot","kor","kol","kel","kul","kur","kar","kır","kıl","kin","kim","kir","kum","mor","mum","muz","tur","ton","tok",
-        "kok","kek","kilo","kale","kutu","koro","kura","kare","elek","etek","ekol","okul","oluk","olur","onur","oyun","koyun","koyu",
-        "uyu","iyi","yaya","kıyı","ayı","dayı","sayı","sarı","soru","koku","rakam","kuran","kemer","kilit","tarak","martı","mantı",
-        "orman","limon","armut","lokum","süt","tül","tür","kül","küs","süs","söz","göz","yaz","kaz","tuz","buz","muz","kız","diz","diş",
-        "kuş","kış","taş","yaş","baş","sel","sal","sol","son","sen","siz","sis","soy","say","ser","sır","dil","dal","dül","döl",
-        "diz","düz","dün","dut","dam","dem","yol","yel","yıl","yay","tay","toy","yüz","yün","yaz","yer","yar","zil","zar","zor","zam",
-        "saz","söz","öz","üz","iz","as","es","ıs","is","us","üs","os","ös","ay","oy","uy","üy","ey","ad","od","öd","ud","üd","id",
-        "az","ez","ız","iz","dayı","kedi","yedi","sayı","yazı","kuyu","tüyü","sürü","sözü","gözü","özü","üzüm","müze","maç","saç",
-        "taç","kaç","koç","suç","piç","iç","aç","üç","uç","çam","çan","çal","çil","çim","çok","çöl","bağ","dağ","yağ","çağ","çay",
-        "bal","bel","bil","bul","böl","bol","ben","bin","biz","boz","cam","cem","cım","cız","cep","cop","sac","hac","gen","gel","git",
-        "gir","gör","gül","göl","gün","şal","şer","şiş","şen","şok","şut","beş","kaş","kuş","kış","diş","fiş","boş","loş","hoş","coş",
-        "baba","dede","soba","masa","kasa","kısa","boru","koru","dolu","sulu","kuru","kuzu","tazı","gezi","gazi","balon","börek",
-        "çörek","tabak","ceket","sepet","simit","kilit","ceviz","havuç","karpuz","kavun","kabak","çilek","bebek","güneş","banyo",
-        "dosya","kolye","bilye","ayna","bina","elma","kiraz","incir","dolap","sehpa","perde","halı","biber","badem","bayrak","vatan",
-        "millet","pil","pul","pis","pas","pus","pes","pof","raf","saf","şef","tef","kef","küf","laf","fal","fil","fön","fok","hap",
-        "hip","hak","hal","hat","hız","his","huş","hür","van","var","vay","lav","av","ev","iv","ov","öv","jip","puf","tur","kur",
-        "nur","sur","dur","vur","kitap","defter","silgi","çanta","radyo","televizyon","bilgisayar","helikopter","kamyon","otobüs",
-        "traktör","bisiklet","sandalye","pencere","patates","domates","salatalık","patlıcan","ıspanak","pırasa","fasulye","mercimek",
-        "makarna","yumurta","türkiye","atatürk","cumhuriyet","öğretmen","öğrenci","papatya","karanfil","menekşe","sümbül","orkide",
-        "nilüfer","kaktüs","sardunya","begonya","yasemin","penguen","zürafa","kanguru","timsah","aslan","kaplan","panter","leopar",
-        "çita","sırtlan","portakal","mandalina","greyfurt"
+/* =======================
+   1–2 HARF
+======================= */
+"al","el","il","at","et","it","an","en","in",
+"la","le","li","ta","te","ti","na","ne","ni",
+"ok","ol","on","ot","ak","ek","un","ut",
+"ay","oy","uy","ev","av","su","bu","şu","o",
+
+/* =======================
+   3 HARF
+======================= */
+"ala","ela","ata","ana","ali","anne","nine",
+"tel","ten","tat","nil","elli",
+"kom","kol","kor","kul","kar","kum",
+"mor","mum","ton","tok","kok","kek",
+"kale","kutu","kare","elek","etek",
+"okul","oyun","koyu","koyun",
+"iyi","ayı","dayı","sayı","sarı",
+"soru","koku","orman","limon","armut",
+"süt","tül","kül","süs","söz","göz",
+"yaz","kaz","tuz","buz","kız","diz",
+"diş","kuş","kış","taş","yaş","baş",
+"sel","sal","sol","son","sen","sis",
+"say","dil","dal","dut","dam","dem",
+"yol","yel","yıl","yay","tay","toy",
+"yüz","yün","yer","yar","zil","zar",
+"saz","öz","üz","iz","as","es","is",
+"us","ad","od","id","az","ez",
+
+/* =======================
+   4 HARF
+======================= */
+"lale","tane","nane","alet","aile",
+"kilo","koro","kura","ekol","oluk",
+"olur","onur","yaya","kıyı","rakam",
+"kemer","kilit","tarak","martı",
+"mantı","lokum","orman","muzik",
+"yazı","kuyu","tüyü","sürü","üzüm",
+"müze","maç","saç","taç","kaç","koç",
+"iç","aç","üç","uç","çam","çan",
+"çal","çim","çöl","çay","bal","bel",
+"bil","bul","bol","ben","bin","biz",
+"cam","cep","gen","gel","git","gir",
+"gör","gül","göl","gün","şal","şen",
+"beş","kaş","fiş","boş","hoş","baba",
+"dede","soba","masa","kasa","kısa",
+"boru","koru","dolu","sulu","kuru",
+"kuzu","tazı","gezi","balon","börek",
+"çörek","tabak","ceket","sepet","simit",
+"ceviz","havuç","kabak","çilek","bebek",
+"güneş","banyo","dosya","kolye",
+"ayna","bina","elma","kiraz","incir",
+"dolap","sehpa","perde","halı",
+"biber","badem","bayrak","pil","pul",
+"pas","pus","pes","raf","saf","şef",
+"laf","fal","fil","fok","hak","hal",
+"hat","hız","his","hür","var","vay",
+"lav","jip","puf","nur","sur","dur",
+
+/* =======================
+   5–6 HARF
+======================= */
+"kitap","defter","silgi","çanta",
+"radyo","kamera","telefon",
+"bisiklet","sandalye","pencere",
+"patates","domates","ıspanak",
+"pırasa","fasulye","makarna",
+"yumurta","öğretmen","öğrenci",
+"papatya","menekşe","orkide",
+"nilüfer","kaktüs","yasemin",
+"penguen","zürafa","kanguru",
+"timsah","aslan","kaplan",
+"portakal","mandalina","greyfurt",
+"oyuncak","arkadaş","yardım",
+"teşekkür","lütfen","merhaba",
+
+/* =======================
+   7+ HARF
+======================= */
+"bilgisayar","televizyon","helikopter",
+"otobüs","traktör",
+"salatalık","patlıcan","mercimek",
+"cumhuriyet","atatürk","türkiye",
+"hayvanlar","çiçekler","oyunlar",
+"masallar","hikayeler"
     ]
 };
+
+// --- GÜVENLİK FİLTRESİ (BLACKLIST) ---
+//const BLACKLIST = ["piç", "mal", "salak", "aptal", "gerizekalı", "bok", "kıç"];
+const BLACKLIST = [
+  // Küfür / Hakaret
+  "argo"
+];
+
 
 window.state = {
     name: '',
@@ -309,12 +386,9 @@ window.ui = {
         document.getElementById('current-word').innerText = displayText;
     },
 
-    // YENİ GÖRSEL DURUM YÖNETİMİ
     setCardState: (state) => {
         const card = document.getElementById('word-card');
-        // Tüm sınıfları temizle
         card.classList.remove('card-neutral', 'card-success', 'card-error');
-        
         if (state === 'ok') card.classList.add('card-success');
         else if (state === 'err') card.classList.add('card-error');
         else card.classList.add('card-neutral');
@@ -381,10 +455,18 @@ window.app = {
 
     startGame: (mode) => {
         window.state.mode = mode;
+        
+        // 1. HARF FİLTRESİ VE BLACKLIST KONTROLÜ
         let pool = window.DB.words.filter(word => {
-            return word.split('').every(c => window.state.allowedChars.includes(c));
+            // Harf kontrolü
+            const allowed = word.split('').every(c => window.state.allowedChars.includes(c));
+            // Yasaklı kelime kontrolü (Küçük harfe çevirip bakıyoruz)
+            const safe = !BLACKLIST.includes(word.toLowerCase());
+            
+            return allowed && safe;
         });
 
+        // 2. MOD FİLTRESİ
         if (mode === 'hece') {
             pool = pool.filter(w => w.length >= 2 && w.length <= 3);
             pool.sort(() => 0.5 - Math.random());
@@ -436,22 +518,19 @@ window.app = {
         window.state.isLocked = true;
         document.getElementById('game-controls').classList.add('locked');
         
-        // Kartın rengini o anki kelime için değiştir
         window.ui.setCardState(isCorrect ? 'ok' : 'err');
 
-        // Puanı Arka Planda İşle
         window.app.processScore(isCorrect);
         window.ui.updateStats();
 
-        // 2. BEKLE VE YENİ KELİMEYE GEÇ
+        // 2. MİKRO BEKLEME (Renk görünsün)
         setTimeout(() => {
-            window.ui.setCardState('neutral'); // Kartı beyaza döndür
-            window.app.nextWord(); // Yeni kelimeyi yükle
+            window.ui.setCardState('neutral');
+            window.app.nextWord();
             
-            // Kilidi aç
             window.state.isLocked = false;
             document.getElementById('game-controls').classList.remove('locked');
-        }, 300); // 0.3 Saniye Bekleme
+        }, 300); 
     },
 
     processScore: (isCorrect) => {
